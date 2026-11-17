@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.security import UnsafeURLError, validate_public_url
+from app.security import UnsafeURLError, validate_public_url, validate_url_for_registration
 
 client = TestClient(app)
 VALID_KEY = {"X-API-Key": "test-api-key-1234567890"}
@@ -27,6 +27,16 @@ def test_urls_inseguras_sao_bloqueadas(url):
 
 def test_ip_publico_e_aceito():
     validate_public_url("http://8.8.8.8")
+
+
+def test_cadastro_aceita_hostname_sem_resolver_dns():
+    validate_url_for_registration("https://example.com")
+
+
+@pytest.mark.parametrize("url", ["http://localhost", "http://127.0.0.1", "http://10.0.0.5"])
+def test_cadastro_bloqueia_alvos_internos_obvios(url):
+    with pytest.raises(UnsafeURLError):
+        validate_url_for_registration(url)
 
 
 def test_health_nao_exige_chave():

@@ -14,12 +14,7 @@ class UnsafeURLError(ValueError):
     """URL não permitida para monitoramento."""
 
 
-def validate_public_url(url: str, allow_private: bool = False) -> None:
-    """Aceita só http/https apontando para endereços públicos.
-
-    Impede que o monitor seja usado para acessar a rede interna
-    (localhost, IPs privados, metadados de nuvem como 169.254.169.254).
-    """
+def _validate_url_shape(url: str) -> tuple[str, int]:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"}:
         raise UnsafeURLError("use apenas http ou https")
@@ -28,8 +23,38 @@ def validate_public_url(url: str, allow_private: bool = False) -> None:
     host = parsed.hostname
     if not host:
         raise UnsafeURLError("URL sem host")
-
     port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    return host, port
+
+
+def validate_url_for_registration(url: str, allow_private: bool = False) -> None:
+    """Valida a URL no cadastro sem depender de DNS externo.
+
+    A API fica em rede interna. A resolução DNS completa, inclusive de
+    hostnames que apontam para IPs privados, é feita pelo worker antes de
+    cada checagem.
+    """
+    host, _ = _validate_url_shape(url)
+    if allow_private:
+        return
+    normalized = host.lower().rstrip(".")
+    if normalized == "localhost" or normalized.endswith(".localhost"):
+        raise UnsafeURLError("endereço interno ou reservado não é permitido")
+    try:
+        ip = ipaddress.ip_address(host.split("%")[0])
+    except ValueError:
+        return
+    if not ip.is_global:
+        raise UnsafeURLError("endereço interno ou reservado não é permitido")
+
+
+def validate_public_url(url: str, allow_private: bool = False) -> None:
+    """Aceita só http/https apontando para endereços públicos.
+
+    Impede que o monitor seja usado para acessar a rede interna
+    (localhost, IPs privados, metadados de nuvem como 169.254.169.254).
+    """
+    host, port = _validate_url_shape(url)
     try:
         infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
     except socket.gaierror as exc:

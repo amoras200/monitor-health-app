@@ -66,7 +66,7 @@ Este projeto aplica o que aprendi depois de um projeto acadêmico (e-commerce) e
 - **Rede isolada:** a API e o MongoDB ficam em uma rede interna sem acesso à internet; o banco não publica porta no host.
 - **MongoDB com autenticação** e um usuário da aplicação com permissão mínima (`readWrite` só no banco do projeto).
 - **Chave de API** no cabeçalho `X-API-Key`, comparada em tempo constante. A API não sobe sem a chave configurada.
-- **Proteção contra SSRF:** as URLs cadastradas só podem ser http/https públicas. São bloqueados `localhost`, IPs privados, link-local (como `169.254.169.254`), URLs com usuário e senha, e redirecionamentos não são seguidos. A validação roda no cadastro e de novo a cada checagem.
+- **Proteção contra SSRF:** as URLs cadastradas só podem ser http/https. No cadastro, a API bloqueia esquemas inválidos, credenciais na URL, `localhost` e IPs privados/link-local (como `169.254.169.254`). Como a API fica em rede interna sem DNS externo, a resolução DNS completa — inclusive de hostnames que apontam para IPs privados — é feita pelo worker antes de cada checagem; redirecionamentos não são seguidos.
 - **Segredos só em variáveis de ambiente** (`.env` no `.gitignore`, `.env.example` no repositório).
 - **Containers endurecidos:** usuário não root, sistema de arquivos somente leitura, `cap_drop: ALL`, `no-new-privileges`.
 - **Timeouts** em todas as requisições e limite de tamanho do corpo no Nginx.
@@ -85,6 +85,7 @@ Os testes cobrem a regra de alertas, o verificador (com requisições simuladas)
 
 - O certificado do desenvolvimento é autoassinado; em produção use Let's Encrypt.
 - A validação de SSRF resolve o DNS antes da requisição; um ataque de *DNS rebinding* ainda é teoricamente possível. Mitigação futura: conectar direto ao IP validado.
+- O cadastro não resolve DNS; um hostname que não resolve ou aponta para IP privado é aceito na API e bloqueado pelo worker na primeira checagem.
 - Não há limite de requisições (rate limit) na API.
 - Uma única chave de API compartilhada; não há usuários nem permissões por perfil.
 - Checagem por GET simples, sem validar o conteúdo da resposta.

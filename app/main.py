@@ -10,7 +10,7 @@ from pymongo.errors import DuplicateKeyError
 from app.config import MIN_API_KEY_LENGTH, get_settings
 from app.db import ensure_indexes, get_db
 from app.models import ServiceCreate
-from app.security import UnsafeURLError, require_api_key, validate_public_url
+from app.security import UnsafeURLError, require_api_key, validate_url_for_registration
 
 
 @asynccontextmanager
@@ -52,7 +52,7 @@ def health() -> dict:
 def create_service(payload: ServiceCreate) -> dict:
     url = str(payload.url)
     try:
-        validate_public_url(url, get_settings().allow_private_targets)
+        validate_url_for_registration(url, get_settings().allow_private_targets)
     except UnsafeURLError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, f"URL não permitida: {exc}")
 
