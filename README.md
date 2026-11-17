@@ -6,6 +6,10 @@ Monitor de disponibilidade de aplicações: cadastra URLs, verifica periodicamen
 
 > Projeto de portfólio com foco em **suporte a aplicações**, **automação** e **segurança desde o início**.
 
+## Demonstração
+
+![Demonstração do App Health Monitor](assets/Teste.gif)
+
 ## Como funciona
 
 ```mermaid
