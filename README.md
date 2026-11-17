@@ -1,5 +1,7 @@
 # App Health Monitor
 
+[![CI](https://github.com/amoras200/monitor-health-app/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/amoras200/monitor-health-app/actions/workflows/ci.yml)
+
 Monitor de disponibilidade de aplicações: cadastra URLs, verifica periodicamente se estão no ar, guarda o histórico no **MongoDB** e envia **alertas por email** quando um serviço cai e quando volta.
 
 > Projeto de portfólio com foco em **suporte a aplicações**, **automação** e **segurança desde o início**.
