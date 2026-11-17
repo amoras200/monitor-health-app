@@ -1,0 +1,39 @@
+Roteiro de demonstração
+
+1. Preparar
+
+cd ~/monitor-health-check
+docker compose ps
+curl -sS -k https://localhost/health
+
+2. Rodar o ciclo completo
+
+./scripts/demo.sh
+
+3. Quando o script pausar após a queda
+
+- Confira o email com assunto:
+  [ALERTA] Ciclo-Teste fora do ar
+- Depois pressione Enter para simular a correção.
+
+4. No final
+
+- Confira o email com assunto:
+  [OK] Ciclo-Teste voltou
+- Confira o estado final impresso pelo script.
+
+O script executa a sequência abaixo:
+
+- Remove serviços antigos chamados Ciclo ou Ciclo-Teste.
+- Garante que o serviço Sempre OK existe.
+- Cria Ciclo-Teste apontando para https://httpbin.org/status/500.
+- Espera 3 falhas consecutivas e o estado down.
+- Atualiza a URL do Ciclo-Teste para https://example.net/ usando o ID.
+- Espera o estado voltar para up.
+
+Para repetir a demonstração, rode novamente:
+
+./scripts/demo.sh
+
+O script só altera a URL depois de confirmar o estado down. Isso garante
+que o alerta de queda seja enviado antes do alerta de recuperação.
